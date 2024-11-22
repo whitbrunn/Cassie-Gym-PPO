@@ -1,0 +1,6 @@
+# Success, loss goes down, and test rewards looks fine, but not train rewards.
+# b44293-seed42
+python train.py --n_itr 20 --num_procs 8
+
+
+python train.py --n_itr 20 --num_procs 10 --num_steps 10000

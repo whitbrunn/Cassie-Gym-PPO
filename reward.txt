@@ -1,0 +1,52 @@
+def _get_reward(self, action):
+
+	qpos = np.copy(self.cassim.qpos())
+	qvel = np.copy(self.cassim.qvel())
+
+	# 标准化脚的力量和速度
+	desired_max_foot_frc = 350
+	desired_max_foot_vel = 3.0
+	orient_targ = np.array([1, 0, 0, 0])
+
+	com_vel = qvel[0]  #只关注X方向速度
+	# 对FRC和vel设置一个上限
+	normed_left_frc = min(self.l_foot_frc, desired_max_foot_frc) / desired_max_foot_frc
+	normed_right_frc = min(self.r_foot_frc, desired_max_foot_frc) / desired_max_foot_frc
+	normed_left_vel = min(np.linalg.norm(self.l_foot_vel), desired_max_foot_vel) / desired_max_foot_vel
+	normed_right_vel = min(np.linalg.norm(self.r_foot_vel), desired_max_foot_vel) / desired_max_foot_vel
+
+	com_orient_error = 0
+	foot_orient_error = 0
+	com_vel_error = 0
+	com_orient_error += 1 * (1 - np.inner(orient_targ, qpos[3:7]) ** 2)
+	foot_orient_error += 1 * (self.l_foot_orient_cost + self.r_foot_orient_cost)
+	com_vel_error += np.linalg.norm(self.speed - com_vel)
+	straight_diff = np.abs(qpos[1])  # straight difference penalty
+	if straight_diff < 0.05:
+	    straight_diff = 0
+	height_diff = np.abs(qpos[2] - 0.9)
+	deadzone_size = 0.05 + 0.05 * self.speed
+	if height_diff < deadzone_size:
+	    height_diff = 0
+	pelvis_motion = straight_diff + height_diff
+	left_frc_clock = self.left_clock[0](self.phase)
+	right_frc_clock = self.right_clock[0](self.phase)
+	left_vel_clock = self.left_clock[1](self.phase)
+	right_vel_clock = self.right_clock[1](self.phase)
+
+
+	left_frc_score = np.tanh(left_frc_clock * normed_left_frc)
+	left_vel_score = np.tanh(left_vel_clock * normed_left_vel)
+	right_frc_score = np.tanh(right_frc_clock * normed_right_frc)
+	right_vel_score = np.tanh(right_vel_clock * normed_right_vel)
+
+	foot_frc_score = left_frc_score + right_frc_score
+	foot_vel_score = left_vel_score + right_vel_score
+
+	reward = 0.250 * foot_frc_score + \
+		 0.350 * foot_vel_score + \
+		 0.200 * np.exp(-com_vel_error) + \
+		 0.100 * np.exp(-(com_orient_error + foot_orient_error)) + \
+		 0.100 * np.exp(-pelvis_motion)
+
+	return reward
