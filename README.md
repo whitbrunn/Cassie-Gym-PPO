@@ -52,4 +52,3 @@ The authors would like to express his heartfelt thanks to Prof. Guillaume Adrien
 *[1] Adapted from https://github.com/osudrl/cassie-mujoco-sim, https://github.com/lbermillo/cassie-curriculum-learning/ and https://github.com/XHN-1/Cassie_mujoco_RL.*
 *[2] Adapted from https://github.com/nikhilbarhate99/PPO-PyTorch.*
 
-# Cassie-Gym-PPO
