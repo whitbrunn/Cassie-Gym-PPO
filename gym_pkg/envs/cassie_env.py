@@ -70,10 +70,7 @@ class CassieEnv(gym.Env):
         self.neutral_foot_orient = np.array(
             [-0.24790886454547323, -0.24679713195445646, -0.6609396704367185, 0.663921021343526])
 
-    @property
-    def dt(self):
-        return 1 / 2000 * self.simrate
-
+    
     def step(self, action, return_omniscient_state=False, f_term=0):
         if action.shape[0] != self.action_space.shape[0]:
             raise ValueError(f"Action {action} is invalid, expected shape: {self.action_space.shape}")
